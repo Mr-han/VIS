@@ -7,7 +7,7 @@ import "./App.css";
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0);
-  const { toasts, dismissToast } = useToast();
+  const { toasts, showToast, dismissToast } = useToast();
 
   const handleCheckSubmitted = () => {
     setRefreshKey((prev) => prev + 1);
@@ -22,7 +22,7 @@ function App() {
       <main>
         <div className="container">
           <div className="left-panel">
-            <CheckForm onSuccess={handleCheckSubmitted} />
+            <CheckForm onSuccess={handleCheckSubmitted} showToast={showToast} />
           </div>
 
           <div className="right-panel">
