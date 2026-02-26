@@ -72,16 +72,26 @@ Note that this task is **completely optional** and we do not expect you to finis
 Please answer these briefly:
 
 1. **Authentication:** If we need to add authentication to this system, how would you approach it?
+   - I would use JWT-based authentication with short-lived access tokens and refresh tokens.  
+   - On the frontend: store tokens securely, add login/logout flow, and handle token refresh + unauthorized redirects.
 
 2. **Improvements:** What other improvements would you implement if this were going to production or if you have more time?
+   - First, I would move data from JSON files to a real database.  
+   - I would add more tests for the main user flows to make changes safer.  
+   - I would also polish the UI a bit more, like clearer error messages and smoother loading states.
 
 3. **Tech Stack Experience:** Do you have experience with PHP, Vue.js, or mobile app development (React Native/Flutter)?
+   - Yes. I have experience with Vue.js and native Android development.
 
 4. **AI / Tools:** What tools/assistants did you use while working on this assignment (e.g., GitHub Copilot, ChatGPT, etc.)? We appreciate AI usage, we're interested in _how_ you use these tools.
+   - I used Codex as my primary AI coding assistant for implementation, debugging, and validation.
 
 5. **Visa Status:** What visa are you currently on?
+   - I am currently on a subclass 485 visa, valid until February 2028.
 
 6. **Languages:** What language(s) do you speak and what's your proficiency level?
+   - Chinese: Native proficiency.  
+   - English: Professional Working Proficiency.
 
 > **Tip:** You can write your answers directly in this README.md file below each question.
 
