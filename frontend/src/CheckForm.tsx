@@ -1,19 +1,28 @@
 import { useState, useEffect } from "react";
 import type { Vehicle, CheckItem, CheckItemKey, ErrorResponse } from "./types";
+import type { ToastType } from "./Toast";
 import { api } from "./api";
 
-const CHECK_ITEMS: CheckItemKey[] = ["TYRES", "BRAKES", "LIGHTS"];
+const CHECK_ITEMS: CheckItemKey[] = [
+  "TYRES",
+  "BRAKES",
+  "LIGHTS",
+  "OIL",
+  "COOLANT",
+];
 
 interface Props {
   onSuccess: () => void;
+  showToast: (message: string, type: ToastType) => void;
 }
 
-export function CheckForm({ onSuccess }: Props) {
+export function CheckForm({ onSuccess, showToast }: Props) {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState("");
   const [odometerKm, setOdometerKm] = useState("");
+  const [note, setNote] = useState("");
   const [items, setItems] = useState<CheckItem[]>(
-    CHECK_ITEMS.map((key) => ({ key, status: true as unknown as "OK" })),
+    CHECK_ITEMS.map((key) => ({ key, status: "OK" })),
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,13 +32,9 @@ export function CheckForm({ onSuccess }: Props) {
     api.getVehicles().then(setVehicles).catch(console.error);
   }, []);
 
-  const handleItemStatusChange = (key: CheckItemKey, status: boolean) => {
+  const handleItemStatusChange = (key: CheckItemKey, status: "OK" | "FAIL") => {
     setItems((prev) =>
-      prev.map((item) =>
-        item.key === key
-          ? { ...item, status: status as unknown as "OK" | "FAIL" }
-          : item,
-      ),
+      prev.map((item) => (item.key === key ? { ...item, status } : item)),
     );
   };
 
@@ -44,23 +49,28 @@ export function CheckForm({ onSuccess }: Props) {
         vehicleId: selectedVehicle,
         odometerKm: parseFloat(odometerKm),
         items,
+        ...(note.trim() ? { note: note.trim() } : {}),
       });
 
       // Reset form and display success notification
       setSelectedVehicle("");
       setOdometerKm("");
-      setItems(
-        CHECK_ITEMS.map((key) => ({ key, status: true as unknown as "OK" })),
-      );
+      setNote("");
+      setItems(CHECK_ITEMS.map((key) => ({ key, status: "OK" })));
+      showToast("Inspection submitted successfully.", "success");
       onSuccess();
     } catch (err: unknown) {
       const errorResponse = err as ErrorResponse;
       if (errorResponse.error?.details) {
-        setValidationErrors(
-          errorResponse.error.details.map((d) => `${d.field}: ${d.reason}`),
+        const details = errorResponse.error.details.map(
+          (d) => `${d.field}: ${d.reason}`,
         );
+        setValidationErrors(details);
+        showToast(details[0] ?? "Validation failed.", "error");
       } else {
-        setError("Failed to submit check. Please try again.");
+        const message = "Failed to submit check. Please try again.";
+        setError(message);
+        showToast(message, "error");
       }
     } finally {
       setLoading(false);
@@ -103,10 +113,13 @@ export function CheckForm({ onSuccess }: Props) {
         <label htmlFor="odometer">Odometer (km) *</label>
         <input
           id="odometer"
-          type="text"
+          type="number"
           value={odometerKm}
           onChange={(e) => setOdometerKm(e.target.value)}
           placeholder="Enter odometer reading"
+          min={1}
+          step={1}
+          inputMode="numeric"
           required
         />
       </div>
@@ -117,17 +130,44 @@ export function CheckForm({ onSuccess }: Props) {
           {items.map((item) => (
             <div key={item.key} className="checklist-item">
               <span className="item-label">{item.key}</span>
-              <select
-                value={String(item.status)}
-                onChange={(e) =>
-                  handleItemStatusChange(item.key, e.target.value === "true")
-                }>
-                <option value="true">OK</option>
-                <option value="false">FAIL</option>
-              </select>
+              <div className="radio-group">
+                <label>
+                  <input
+                    type="radio"
+                    name={`status-${item.key}`}
+                    value="OK"
+                    checked={item.status === "OK"}
+                    onChange={() => handleItemStatusChange(item.key, "OK")}
+                  />
+                  OK
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name={`status-${item.key}`}
+                    value="FAIL"
+                    checked={item.status === "FAIL"}
+                    onChange={() => handleItemStatusChange(item.key, "FAIL")}
+                  />
+                  FAIL
+                </label>
+              </div>
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="note">Notes (Optional)</label>
+        <textarea
+          id="note"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Add optional inspection notes"
+          maxLength={300}
+          rows={4}
+        />
+        <small>{note.length}/300</small>
       </div>
 
       <button type="submit" disabled={loading}>
