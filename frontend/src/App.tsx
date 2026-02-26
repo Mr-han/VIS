@@ -7,8 +7,7 @@ import "./App.css";
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { toasts, showToast, dismissToast } = useToast();
+  const { toasts, dismissToast } = useToast();
 
   const handleCheckSubmitted = () => {
     setRefreshKey((prev) => prev + 1);
